@@ -1,0 +1,181 @@
+{
+  "objects" : {
+    "queryPipelines" : [ {
+      "id" : "Movie_Search",
+      "stages" : [ {
+        "type" : "set-params",
+        "id" : "jdl",
+        "params" : [ {
+          "key" : "facet.range",
+          "value" : "year_i",
+          "policy" : "append"
+        }, {
+          "key" : "facet.range.start",
+          "value" : "1900",
+          "policy" : "append"
+        }, {
+          "key" : "facet.range.end",
+          "value" : "2020",
+          "policy" : "append"
+        }, {
+          "key" : "facet.range.gap",
+          "value" : "10",
+          "policy" : "append"
+        }, {
+          "key" : "facet.range.include",
+          "value" : "outer",
+          "policy" : "append"
+        }, {
+          "key" : "authors",
+          "value" : "true",
+          "policy" : "default"
+        } ],
+        "type" : "set-params",
+        "skip" : false,
+        "licensed" : true,
+        "secretSourceStageId" : "jdl"
+      }, {
+        "type" : "text-tagger",
+        "id" : "3c8c4a24-2996-464d-bb7e-8d89728f80ae",
+        "useEmbeddedSolrServer" : false,
+        "paramToTag" : "q",
+        "spell_corrections_enabled" : true,
+        "phrase_boosting_enabled" : true,
+        "tail_rewrites_enabled" : true,
+        "phraseBoost" : 2.0,
+        "phraseSlop" : 10,
+        "synonymExpansionBoost" : 2.0,
+        "synonym_expansion_enabled" : true,
+        "overlaps" : "ALL",
+        "params" : [ ],
+        "type" : "text-tagger",
+        "skip" : false,
+        "licensed" : true,
+        "secretSourceStageId" : "3c8c4a24-2996-464d-bb7e-8d89728f80ae"
+      }, {
+        "type" : "recommendation",
+        "id" : "803f93c1-af04-4c8a-8ec6-d62641941d5c",
+        "numRecommendations" : 10,
+        "numSignals" : 100,
+        "aggrType" : "click@doc_id,filters,query",
+        "boostId" : "id",
+        "boostingMethod" : "query-param",
+        "boostingParam" : "boost",
+        "queryParams" : [ {
+          "key" : "qf",
+          "value" : "query_t"
+        }, {
+          "key" : "pf",
+          "value" : "query_t^50"
+        }, {
+          "key" : "pf",
+          "value" : "query_t~3^20"
+        }, {
+          "key" : "pf2",
+          "value" : "query_t^20"
+        }, {
+          "key" : "pf2",
+          "value" : "query_t~3^10"
+        }, {
+          "key" : "pf3",
+          "value" : "query_t^10"
+        }, {
+          "key" : "pf3",
+          "value" : "query_t~3^5"
+        }, {
+          "key" : "boost",
+          "value" : "map(query({!field f=query_s v=$q}),0,0,1,20)"
+        }, {
+          "key" : "mm",
+          "value" : "50%"
+        }, {
+          "key" : "defType",
+          "value" : "edismax"
+        }, {
+          "key" : "sort",
+          "value" : "score desc, weight_d desc"
+        } ],
+        "rollupField" : "doc_id_s",
+        "rollupWeightField" : "weight_d",
+        "weightExpression" : "math:log(weight_d + 1) + 10 * math:log(score+1)",
+        "rollupWeightStrategy" : "max",
+        "type" : "recommendation",
+        "skip" : false,
+        "licensed" : true,
+        "secretSourceStageId" : "803f93c1-af04-4c8a-8ec6-d62641941d5c"
+      }, {
+        "type" : "search-fields",
+        "id" : "903f6eda-0751-40b0-b723-6ac0b30f88ac",
+        "rows" : 10,
+        "start" : 0,
+        "queryFields" : [ {
+          "field" : "title_txt"
+        }, {
+          "field" : "year_i"
+        } ],
+        "returnFields" : [ "*", "score" ],
+        "type" : "search-fields",
+        "skip" : false,
+        "licensed" : true,
+        "secretSourceStageId" : "903f6eda-0751-40b0-b723-6ac0b30f88ac"
+      }, {
+        "type" : "facet",
+        "id" : "f6c20a27-9247-450c-b26a-817b1728cca9",
+        "fieldFacets" : [ {
+          "field" : "genres_ss",
+          "minCount" : 1,
+          "missing" : false
+        } ],
+        "type" : "facet",
+        "skip" : false,
+        "licensed" : true,
+        "secretSourceStageId" : "f6c20a27-9247-450c-b26a-817b1728cca9",
+        "properties" : {
+          "autoCreated" : true
+        }
+      }, {
+        "type" : "query-rules",
+        "id" : "03273a65-1cd9-416f-a5ba-29f74ec51e50",
+        "useEmbeddedSolrServer" : false,
+        "useOriginalQueryIfNoRulesMatch" : true,
+        "matchPartialFilterQueries" : true,
+        "handler" : "select",
+        "method" : "POST",
+        "params" : [ ],
+        "headers" : [ ],
+        "type" : "query-rules",
+        "skip" : false,
+        "licensed" : true,
+        "secretSourceStageId" : "03273a65-1cd9-416f-a5ba-29f74ec51e50"
+      }, {
+        "type" : "solr-query",
+        "id" : "06152a73-dfd0-49cb-bb5a-2b5d5366fd9d",
+        "httpMethod" : "POST",
+        "allowFederatedSearch" : false,
+        "type" : "solr-query",
+        "skip" : false,
+        "responseSignalsEnabled" : true,
+        "licensed" : true,
+        "secretSourceStageId" : "06152a73-dfd0-49cb-bb5a-2b5d5366fd9d"
+      }, {
+        "type" : "query-rules-augment-response",
+        "id" : "ede0cce7-6b94-4a13-9eee-32dc3bd828bb",
+        "facetLabelParseDelimiter" : "||",
+        "type" : "query-rules-augment-response",
+        "skip" : false,
+        "licensed" : true,
+        "secretSourceStageId" : "ede0cce7-6b94-4a13-9eee-32dc3bd828bb"
+      } ],
+      "properties" : {
+        "secretSourcePipelineId" : "Movie_Search"
+      }
+    } ]
+  },
+  "metadata" : {
+    "formatVersion" : "1",
+    "exportedBy" : "1df35c14-ef27-4de7-b91e-b0bd4e9ac9a5",
+    "exportedDate" : "2019-10-15T19:44:37.921Z",
+    "fusionVersion" : "4.2.1",
+    "fusionGuid" : "0e8f6ea8-d91d-4f12-b543-b61c886dfc5a"
+  }
+}

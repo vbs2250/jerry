@@ -1,0 +1,12 @@
+{
+  "objects" : {
+    "queryProfiles" : [{
+  "id": "Music_Search",
+  "queryPipeline": "Music_Search",
+  "collection": "Music_Search",
+  "searchHandler" : "select"
+}]
+  },
+  "metadata" : {
+  }
+}

@@ -1,0 +1,32 @@
+{  
+   "objects":{  
+      "sparkJobs":[{
+      "type" : "sql_template",
+      "id" : "Movie_Search_user_query_history_aggregation",
+      "inputCollection" : "Movie_Search_signals",
+      "outputCollection" : "Movie_Search_signals_aggr",
+      "sql" : "WITH signal_type_groups AS (\n    SELECT SUM(count_i) AS typed_aggr_count_i,\n           user_id,\n           query,\n           type,\n           time_decay(count_i, timestamp_tdt, \"30 days\", ref_time, weight_d) AS typed_weight_d\n      FROM ${inputCollection}\n     WHERE type IN (${signalTypes})\n  GROUP BY query, user_id, type\n ) SELECT SUM(typed_aggr_count_i) AS aggr_count_i,\n          user_id AS user_id_s,\n          query AS query_s,\n          weighted_sum(typed_weight_d, type, '${signalTypeWeights}') AS weight_d\n     FROM signal_type_groups\n GROUP BY user_id, query",
+      "parameters" : [ {
+        "key" : "signalTypeWeights",
+        "value" : "request:1.0,click:5.0,cart:10.0,purchase:25.0"
+      } ],
+      "selectQuery" : "*:*",
+      "sourceRemove" : "${secret.sourceRemove}",
+      "sourceCatchup" : true,
+      "outputRollup" : true,
+      "hiddenParameters" : [ {
+        "key" : "signalTypes",
+        "value" : "_regex/signalTypeWeights/([\\w\\-\\.]*):([\\d\\.\\-]*)(,|$)/'$1'$3/g"
+      } ],
+      "skipCheckEnabled" : true,
+      "notes" : "Computes an aggregated weight for each user / query combination found in the signals collection. The weight for each group is computed using an exponential time-decay on signal count (30 day half-life) and a weighted sum based on the signal type. Use the 'signalTypeWeights' parameter to set the correct signal types and weights for your dataset. The results of this job can be used to boost queries for a user based on their past queries."
+    }]},
+   "properties":[  
+         {  
+         "id":"secret.sourceRemove"
+      }
+   ],
+   "metadata":{  
+
+   }
+}
